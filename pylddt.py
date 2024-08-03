@@ -6,10 +6,10 @@ import argparse
 
 Usage = \
 (
-"Calculate DALI Z score and LDDT from a test Multiple Sequence Alignment (MSA) and PDB files with structures."
-"Reports Z and LDDT for each pair of sequences, and the mean Z and LDDT over all pairs."
-"Sequences are matched to structures by string matching, the sequence of a PDB file is taken from CA ATOM records."
-"Structures which do not match the MSA are ignored."
+"Calculate DALI Z score and LDDT from a test Multiple Sequence Alignment (MSA) and PDB files with structures. "
+"Reports Z and LDDT for each pair of sequences, and the mean Z and LDDT over all pairs. "
+"Sequences are matched to structures by string matching, the sequence of a PDB file is taken from CA ATOM records. "
+"Structures which do not match the MSA are ignored. "
 "Sequences in the MSA which do not match a structure are reported, then ignored."
 )
 
@@ -269,7 +269,10 @@ for msa_idx in range(nr_test_seqs):
 			matched_pdb_idx = pdb_idx
 			matched_pdb_fns.append(pdb_fn)
 			break
-	if not matched_pdb_idx is None:
+	if matched_pdb_idx is None:
+		out.write("label=%s\tpdbfile=SEQUENCE_NOT_MATCHED\n" % label)
+	else:
+		out.write("label=%s\tpdbfile=%s\n" % (label, pdb_fn))
 		msa_idxs.append(msa_idx)
 		pdb_idxs.append(matched_pdb_idx)
 
@@ -305,8 +308,8 @@ for i in range(nr_matched):
 		total_Z += Z
 		total_LDDT += LDDT
 		nr_pairs += 1
-		out.write("pdb1=%s\tpdb2=%s\tlabel1=%s\tlabel2=%s\tDALI_Z=%.1f\tLDDT=%.4f\n" %
-			(pdb_fni, pdb_fnj, labeli, labelj, Z, LDDT))
+		out.write("label1=%s\tlabel2=%s\tDALI_Z=%.1f\tLDDT=%.4f\n" %
+			(labeli, labelj, Z, LDDT))
 
 mean_Z = total_Z/nr_pairs
 mean_LDDT = total_LDDT/nr_pairs
