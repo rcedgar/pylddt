@@ -2,11 +2,45 @@
 
 import sys
 import math
+import argparse
 
-msa_fn = sys.argv[1]
-paths_fn = sys.argv[2]
+Usage = \
+(
+"Calculate DALI Z score and LDDT from a test Multiple Sequence Alignment (MSA) and PDB files with structures."
+"Reports Z and LDDT for each pair of sequences, and the mean Z and LDDT over all pairs."
+"Sequences are matched to structures by string matching, the sequence of a PDB file is taken from CA ATOM records."
+"Structures which do not match the MSA are ignored."
+"Sequences in the MSA which do not match a structure are reported, then ignored."
+)
 
-R0 = 15
+AP = argparse.ArgumentParser(description = Usage)
+AP.add_argument("--msa", required=True, help="Multiple Sequence Alignment (FASTA format)")
+AP.add_argument("--pdbfiles", required=True, help="Text file with one PDB pathname per line")
+AP.add_argument("--radius", required=False, type=float, default=15.0, help="LDDT inclusion radius (default 15)")
+AP.add_argument("--dists", required=False, default="0.5,1,2,4", help="LDDT distance thresholds, comma-separated (default 0.5,1,2,4)")
+AP.add_argument("--horizon", required=False, type=float, default=20.0, help="DALI horizon (default 20)")
+AP.add_argument("--diagwt", required=False, type=float, default=0.2, help="DALI diagonal weight (default 0.2)")
+AP.add_argument("--output", required=False, default="/dev/stdout", help="output file (default stdout)")
+Args = AP.parse_args()
+
+msa_fn = Args.msa
+paths_fn = Args.pdbfiles
+out_fn = Args.output
+R0 = Args.radius
+D = Args.horizon
+d0 = Args.diagwt
+dists = Args.dists
+thresholds = []
+flds = dists.split(',')
+for fld in flds:
+	try:
+		t = float(fld)
+	except:
+		sys.stderr.write("Invalid distance in --dists argument\n")
+		sys.exit(0)
+	thresholds.append(t)
+
+out = open(out_fn, "w")
 
 three2one={ 'ALA':'A', 'VAL':'V', 'PHE':'F', 'PRO':'P', 'MET':'M',
 			'ILE':'I', 'LEU':'L', 'ASP':'D', 'GLU':'E', 'LYS':'K',
@@ -42,15 +76,6 @@ def read_pdb(fn):
 		ys.append(y)
 		zs.append(z)
 
-	if 0: # CA-CA bond lengths
-		for i in range(0, len(xs)-1):
-			x1 = xs[i-1]
-			y1 = ys[i-1]
-			z1 = zs[i-1]
-			x = xs[i]
-			y = ys[i]
-			z = zs[i]
-			print(get_dist(x1, y1, z1, x, y, z))
 	return seq, xs, ys, zs
 
 def read_fasta(fn):
@@ -110,13 +135,11 @@ def get_dist(x1, y1, z1, x2, y2, z2):
 	return d
 
 def DALI_weight(y):
-	D = 20
 	x = 1.0/(D*D)
 	w = math.exp(-x*y*y)
 	return w
 
 def DALI_dpscorefun(d1, d2):
-	d0 = 0.2
 	diff = abs(d1 - d2)
 	mean = (d1 + d2)/2
 	if mean > 100:
@@ -153,7 +176,7 @@ def dali_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s):
 	score += n*0.2
 	return score
 
-def lddt_score_threadhold(pos1s, pos2s, D1, D2, R0, t):
+def lddt_score_threadhold(pos1s, pos2s, D1, D2, t):
 	nr_cols = len(pos1s)
 	assert len(pos2s) == nr_cols
 	nr_considered = 0
@@ -175,7 +198,7 @@ def lddt_score_threadhold(pos1s, pos2s, D1, D2, R0, t):
 	fract = nr_preserved/nr_considered
 	return fract
 
-def lddt_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s, R0):
+def lddt_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s):
 	L1 = len(x1s)
 	L2 = len(x2s)
 
@@ -206,8 +229,8 @@ def lddt_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s, R0):
 			D2[j][i] = d
 
 	total = 0
-	for t in [ 0.5, 1, 2, 4 ]:
-		score = lddt_score_threadhold(pos1s, pos2s, D1, D2, R0, t)
+	for t in thresholds: # [ 0.5, 1, 2, 4 ]:
+		score = lddt_score_threadhold(pos1s, pos2s, D1, D2, t)
 		total += score
 	avg = total/4
 	return avg
@@ -258,6 +281,7 @@ if nr_matched == 0:
 
 total_Z = 0
 total_LDDT = 0
+nr_pairs = 0
 for i in range(nr_matched):
 	msa_idxi = msa_idxs[i]
 	pdb_idxi = pdb_idxs[i]
@@ -277,14 +301,15 @@ for i in range(nr_matched):
 		posis, posjs = align_pair(rowi, rowj)
 		score = dali_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs)
 		Z = dali_Z(score, Li, Lj)
-		LDDT = lddt_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs, R0)
+		LDDT = lddt_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs)
 		total_Z += Z
 		total_LDDT += LDDT
-		print("pdb1=%s\tpdb2=%s\tlabel1=%s\tlabel2=%s\tDALI_Z=%.1f\tLDDT=%.4f" %
+		nr_pairs += 1
+		out.write("pdb1=%s\tpdb2=%s\tlabel1=%s\tlabel2=%s\tDALI_Z=%.1f\tLDDT=%.4f\n" %
 			(pdb_fni, pdb_fnj, labeli, labelj, Z, LDDT))
 
-mean_Z = total_Z/nr_matched
-mean_LDDT = total_LDDT/nr_matched
+mean_Z = total_Z/nr_pairs
+mean_LDDT = total_LDDT/nr_pairs
 
-print("MSA=%s\tmatched=%d/%d\tZ=%.1f\tLDDT=%.4f" %
-	  (msa_fn, nr_matched, nr_test_seqs, mean_Z, mean_LDDT))
+out.write("MSA=%s\tmatched=%d/%d\tpairs=%d\tmean_Z=%.1f\tmean_LDDT=%.4f" %
+	  (msa_fn, nr_matched, nr_test_seqs, nr_pairs, mean_Z, mean_LDDT))
