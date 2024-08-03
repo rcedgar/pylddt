@@ -1,3 +1,0 @@
-# -daliscore_msa BB11001.afa -input BB11001.files -log daliscore_msa.log -output daliscore_msa.tsv
-
--daliscore_msa pair.afa -input pair.files -log daliscore_msa_pair.log -output daliscore_msa_pair.tsv

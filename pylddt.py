@@ -3,8 +3,10 @@
 import sys
 import math
 
-paths_fn = sys.argv[1]
-test_msa_fn = sys.argv[2]
+msa_fn = sys.argv[1]
+paths_fn = sys.argv[2]
+
+R0 = 15
 
 three2one={ 'ALA':'A', 'VAL':'V', 'PHE':'F', 'PRO':'P', 'MET':'M',
 			'ILE':'I', 'LEU':'L', 'ASP':'D', 'GLU':'E', 'LYS':'K',
@@ -69,6 +71,16 @@ def read_fasta(fn):
 	if len(seq) > 0:
 		seqs[label] = seq.upper()
 	return seqs
+
+def dali_Z(score, len1, len2):
+	n12 = math.sqrt(len1*len2)
+	x = min(n12, 400)
+	mean = 7.9494 + 0.70852*x + 2.5895e-4*x*x - 1.9156e-6*x*x*x
+	if n12 > 400:
+		mean += n12 - 400
+	sigma = 0.5*mean
+	Z = (score - mean) / max(1.0, sigma)
+	return Z
 
 def align_pair(row1, row2):
 	pos1 = 0
@@ -140,6 +152,65 @@ def dali_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s):
 
 	score += n*0.2
 	return score
+
+def lddt_score_threadhold(pos1s, pos2s, D1, D2, R0, t):
+	nr_cols = len(pos1s)
+	assert len(pos2s) == nr_cols
+	nr_considered = 0
+	nr_preserved = 0
+	for i in range(nr_cols):
+		pos1i = pos1s[i]
+		pos2i = pos2s[i]
+		for j in range(i+1, nr_cols):
+			pos1j = pos1s[j]
+			pos2j = pos2s[j]
+			d1 = D1[pos1i][pos1j]
+			d2 = D2[pos2i][pos2j]
+			if d1 < R0 or d2 < R0:
+				continue
+			nr_considered += 1
+			diff = abs(d1 - d2)
+			if diff <= t:
+				nr_preserved += 1
+	fract = nr_preserved/nr_considered
+	return fract
+
+def lddt_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s, R0):
+	L1 = len(x1s)
+	L2 = len(x2s)
+
+	assert len(y1s) == L1
+	assert len(z1s) == L1
+
+	assert len(y2s) == L2
+	assert len(z2s) == L2
+	
+	D1 = []
+	for i in range(L1):
+		D1.append([ None ]*L1)
+
+	D2 = []
+	for i in range(L2):
+		D2.append([ None ]*L2)
+		
+	for i in range(L1):
+		for j in range(i, L1):
+			d = get_dist(x1s[i], y1s[i], z1s[i], x1s[j], y1s[j], z1s[j])
+			D1[i][j] = d
+			D1[j][i] = d
+
+	for i in range(L2):
+		for j in range(i, L2):
+			d = get_dist(x2s[i], y2s[i], z2s[i], x2s[j], y2s[j], z2s[j])
+			D2[i][j] = d
+			D2[j][i] = d
+
+	total = 0
+	for t in [ 0.5, 1, 2, 4 ]:
+		score = lddt_score_threadhold(pos1s, pos2s, D1, D2, R0, t)
+		total += score
+	avg = total/4
+	return avg
 			
 pdb_fns = []
 fn2data = {}
@@ -149,7 +220,7 @@ for line in open(paths_fn):
 	fn2data[fn] = read_pdb(fn)
 nr_pdbs = len(pdb_fns)
 
-test_msa = read_fasta(test_msa_fn)
+test_msa = read_fasta(msa_fn)
 labels = list(test_msa.keys())
 nr_cols = len(test_msa[labels[0]])
 nr_test_seqs = len(labels)
@@ -157,6 +228,7 @@ msai_dx2pdb_idx = []
 nr_matched = 0
 msa_idxs = []
 pdb_idxs = []
+matched_pdb_fns = []
 for msa_idx in range(nr_test_seqs):
 	label = labels[msa_idx]
 	n = len(test_msa[label])
@@ -167,9 +239,12 @@ for msa_idx in range(nr_test_seqs):
 	matched_pdb_idx = None
 	for pdb_idx in range(nr_pdbs):
 		pdb_fn = pdb_fns[pdb_idx]
+		if pdb_fn in matched_pdb_fns:
+			continue
 		pdb_seq, xs, ys, zs = fn2data[pdb_fn]
 		if pdb_seq == test_seq:
 			matched_pdb_idx = pdb_idx
+			matched_pdb_fns.append(pdb_fn)
 			break
 	if not matched_pdb_idx is None:
 		msa_idxs.append(msa_idx)
@@ -178,7 +253,11 @@ for msa_idx in range(nr_test_seqs):
 nr_matched = len(msa_idxs)
 sys.stderr.write("%d / %d MSA sequences matched to structures\n" %
 				 (nr_matched, nr_test_seqs))
+if nr_matched == 0:
+	sys.exit(1)
 
+total_Z = 0
+total_LDDT = 0
 for i in range(nr_matched):
 	msa_idxi = msa_idxs[i]
 	pdb_idxi = pdb_idxs[i]
@@ -186,6 +265,7 @@ for i in range(nr_matched):
 	rowi = test_msa[labeli]
 	pdb_fni = pdb_fns[pdb_idxi]
 	pdb_seqi, xis, yis, zis = fn2data[pdb_fni]
+	Li = len(pdb_seqi)
 	for j in range(i+1, nr_matched):
 		msa_idxj = msa_idxs[j]
 		pdb_idxj = pdb_idxs[j]
@@ -193,7 +273,18 @@ for i in range(nr_matched):
 		rowj = test_msa[labelj]
 		pdb_fnj = pdb_fns[pdb_idxj]
 		pdb_seqj, xjs, yjs, zjs = fn2data[pdb_fnj]
-
+		Lj = len(pdb_seqj)
 		posis, posjs = align_pair(rowi, rowj)
-		dali = dali_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs)
-		print("%s\t%s\tdali\t%.3g" % (labeli, labelj, dali))
+		score = dali_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs)
+		Z = dali_Z(score, Li, Lj)
+		LDDT = lddt_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs, R0)
+		total_Z += Z
+		total_LDDT += LDDT
+		print("pdb1=%s\tpdb2=%s\tlabel1=%s\tlabel2=%s\tDALI_Z=%.1f\tLDDT=%.4f" %
+			(pdb_fni, pdb_fnj, labeli, labelj, Z, LDDT))
+
+mean_Z = total_Z/nr_matched
+mean_LDDT = total_LDDT/nr_matched
+
+print("MSA=%s\tmatched=%d/%d\tZ=%.1f\tLDDT=%.4f" %
+	  (msa_fn, nr_matched, nr_test_seqs, mean_Z, mean_LDDT))
