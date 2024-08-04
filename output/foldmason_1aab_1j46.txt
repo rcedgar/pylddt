@@ -1,0 +1,41 @@
+'1aab_.pdb' -> '../foldmason_pdbdir/1aab_.pdb'
+'1j46_A.pdb' -> '../foldmason_pdbdir/1j46_A.pdb'
+'1aab_1j46.afa' -> '../foldmason_tmp/msa.fa'
+createdb ../foldmason_pdbdir tmpdb 
+
+MMseqs Version:        	763a428b75f5c0447b8205e1198f35de531ea2bf
+Path to ProstT5        	
+Chain name mode        	0
+Write mapping file     	0
+Mask b-factor threshold	0
+Coord store mode       	2
+Write lookup file      	1
+Input format           	0
+File Inclusion Regex   	.*
+File Exclusion Regex   	^$
+Threads                	32
+Verbosity              	3
+
+Output file: tmpdb
+[=================================================================] 2 0s 23ms
+Time for merging to tmpdb_ss: 0h 0m 0s 122ms
+Time for merging to tmpdb_h: 0h 0m 0s 59ms
+Time for merging to tmpdb_ca: 0h 0m 0s 60ms
+Time for merging to tmpdb: 0h 0m 0s 86ms
+Ignore 0 out of 2.
+Too short: 0, incorrect: 0, not proteins: 0.
+Time for processing: 0h 0m 0s 714ms
+msa2lddt tmpdb msa.fa 
+
+MMseqs Version:        	763a428b75f5c0447b8205e1198f35de531ea2bf
+LDDT pair threshold    	0
+Threads                	32
+Input Newick guide tree	
+Verbosity              	3
+                       	
+                       	true
+
+Average MSA LDDT: 0.541571
+Columns considered: 96/96
+Column scores: 0.350000,0.267857,0.416667,0.362500,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.411290,0.515152,0.675000,0.735294,0.804878,0.837838,0.833333,0.755682,0.675000,0.700000,0.755556,0.734043,0.690217,0.646341,0.795455,0.763889,0.715517,0.805556,0.695312,0.593750,0.652778,0.632353,0.600000,0.382353,0.416667,0.000000,0.000000,0.437500,0.530000,0.500000,0.654762,0.650000,0.639706,0.588235,0.705357,0.698529,0.719512,0.750000,0.775862,0.757812,0.756579,0.725000,0.830000,0.910000,0.916667,0.850000,0.845238,0.691667,0.787879,0.862069,0.913793,0.909722,0.953125,0.905172,0.890625,0.885714,0.927419,0.901786,0.842857,0.887931,0.787037,0.759259,0.717742,0.666667,0.784091,0.640000,0.597826,0.447368,0.460526,0.402174,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.162500,0.194444,0.288462,0.607143,0.333333,0.321429
+Time for processing: 0h 0m 0s 60ms

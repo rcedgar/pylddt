@@ -1,0 +1,39 @@
+'1aab_.pdb' -> '../foldmason_pdbdir/1aab_.pdb'
+'1j46_A.pdb' -> '../foldmason_pdbdir/1j46_A.pdb'
+'1k99_A.pdb' -> '../foldmason_pdbdir/1k99_A.pdb'
+'2lef_A.pdb' -> '../foldmason_pdbdir/2lef_A.pdb'
+'BB11001.afa' -> '../foldmason_tmp/msa.fa'
+createdb ../foldmason_pdbdir tmpdb 
+
+MMseqs Version:        	763a428b75f5c0447b8205e1198f35de531ea2bf
+Path to ProstT5        	
+Chain name mode        	0
+Write mapping file     	0
+Mask b-factor threshold	0
+Coord store mode       	2
+Write lookup file      	1
+Input format           	0
+File Inclusion Regex   	.*
+File Exclusion Regex   	^$
+Threads                	32
+Verbosity              	3
+
+Output file: tmpdb
+[=============================================] 4 0s 19ms
+====================Time for merging to tmpdb_ss: 0h 0m 0s 136ms
+Time for merging to tmpdb_h: 0h 0m 0s 64ms
+Time for merging to tmpdb_ca: 0h 0m 0s 59ms
+Time for merging to tmpdb: 0h 0m 0s 63ms
+Ignore 0 out of 4.
+Too short: 0, incorrect: 0, not proteins: 0.
+Time for processing: 0h 0m 0s 685ms
+msa2lddt tmpdb msa.fa 
+
+MMseqs Version:        	763a428b75f5c0447b8205e1198f35de531ea2bf
+LDDT pair threshold    	0
+Threads                	32
+Input Newick guide tree	
+Verbosity              	3
+                       	
+                       	true
+
