@@ -3,7 +3,7 @@
 import sys
 import math
 import argparse
-from lddt import LDDT
+from ss import StructureScorer
 
 Usage = \
 (
@@ -34,31 +34,30 @@ for fld in flds:
 		sys.exit(0)
 	thresholds.append(t)
 
-ld = LDDT()
+scorer = StructureScorer()
 
-ld.R0 = Args.radius
-ld.dists = Args.dists
-ld.symmetry = Args.symmetry
+scorer.R0 = Args.radius
+scorer.dists = Args.dists
+scorer.symmetry = Args.symmetry
 
-ld.read_pdbs(paths_fn)
-ld.read_msa(msa_fn)
-ld.match_seqs_to_pdbs()
+scorer.read_pdbs(paths_fn)
+scorer.read_msa(msa_fn)
+scorer.match_seqs_to_pdbs()
 
-nr_matched = len(ld.msa_idxs)
-assert nr_matched == ld.nr_seqs
+nr_matched = len(scorer.msa_idxs)
+assert nr_matched == scorer.nr_seqs
 
 sys.stderr.write("%d / %d MSA sequences matched to structures\n" %
-				 (ld.nr_matched, ld.nr_seqs))
+				 (scorer.nr_matched, scorer.nr_seqs))
 if nr_matched == 0:
 	sys.exit(1)
 
-ld.set_dist_mxs()
-ld.set_col2pos_vec()
-score = ld.calc_mean_col_score()
+scorer.set_dist_mxs()
+scorer.set_col2pos_vec()
+score = scorer.calc_mean_col_score()
 
 if Args.cols == "yes":
-	for i in range(ld.nr_cols):
-		print("%d\t%.4f" % (i, ld.col_scores[i]))
+	for i in range(scorer.nr_cols):
+		print("%d\t%.4f" % (i, scorer.col_scores[i]))
 
 print("LDDT=%.4f\n" % score)
-
