@@ -42,7 +42,6 @@ class LDDT:
 			ys.append(y)
 			zs.append(z)
 
-		sys.stderr.write("%10.10s  PDB  %32.32s...\n" % (fn, seq))
 		return seq, xs, ys, zs
 
 	def read_msa(self, fn):
@@ -75,9 +74,6 @@ class LDDT:
 			if len(self.msa[self.labels[i]]) != self.nr_cols:
 				sys.stderr.write("\n=== ERROR=== FASTA is not aligned\n\n")
 				sys.exit(1)
-		for i in range(self.nr_seqs):
-			label = self.labels[i]
-			sys.stderr.write("%10.10s  MSA  %32.32s...\n" % (label, self.msa[label]))
 
 	def dali_Z(score, len1, len2):
 		n12 = math.sqrt(len1*len2)
@@ -263,4 +259,3 @@ class LDDT:
 			self.total_col_scores += col_score
 		self.mean_col_score = self.total_col_scores/self.nr_cols
 		return self.mean_col_score
-

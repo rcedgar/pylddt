@@ -16,12 +16,11 @@ AP.add_argument("--pdbfiles", required=True, help="Text file with one PDB pathna
 AP.add_argument("--radius", required=False, type=float, default=15.0, help="LDDT inclusion radius (default 15)")
 AP.add_argument("--dists", required=False, default="0.5,1,2,4", help="LDDT distance thresholds, comma-separated (default 0.5,1,2,4)")
 AP.add_argument("--symmetry", required=False, choices=[ "first", "both", "either" ], default="first", help="Set R0/dali_radius according to both / either / first (default first)")
-AP.add_argument("--output", required=False, default="/dev/stdout", help="output file (default stdout)")
+AP.add_argument("--cols", required=False, default=False, choices=[ "yes", "no" ],  help="Report column scores yes/no (default no)")
 Args = AP.parse_args()
 
 msa_fn = Args.msa
 paths_fn = Args.pdbfiles
-out_fn = Args.output
 R0 = Args.radius
 dists = Args.dists
 symmetry = Args.symmetry
@@ -35,9 +34,12 @@ for fld in flds:
 		sys.exit(0)
 	thresholds.append(t)
 
-out = open(out_fn, "w")
-
 ld = LDDT()
+
+ld.R0 = Args.radius
+ld.dists = Args.dists
+ld.symmetry = Args.symmetry
+
 ld.read_pdbs(paths_fn)
 ld.read_msa(msa_fn)
 ld.match_seqs_to_pdbs()
@@ -52,7 +54,11 @@ if nr_matched == 0:
 
 ld.set_dist_mxs()
 ld.set_col2pos_vec()
-LDDT = ld.calc_mean_col_score()
+score = ld.calc_mean_col_score()
 
-out.write("LDDT=%.4f\n" % LDDT)
-out.close()
+if Args.cols == "yes":
+	for i in range(ld.nr_cols):
+		print("%d\t%.4f" % (i, ld.col_scores[i]))
+
+print("LDDT=%.4f\n" % score)
+
