@@ -29,7 +29,7 @@ msa_fn = Args.msa
 paths_fn = Args.pdbfiles
 out_fn = Args.output
 R0 = Args.radius
-DALI_radius = Args.radius
+DALI_radius = Args.dali_radius
 D = Args.horizon
 d0 = Args.diagwt
 dists = Args.dists
@@ -162,7 +162,7 @@ def dali_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s):
 	for coli in range(n):
 		pos1i = pos1s[coli]
 		pos2i = pos2s[coli]
-		for colj in range(0, n):
+		for colj in range(n):
 			if colj == coli:
 				continue
 			pos1j = pos1s[colj]
@@ -190,6 +190,7 @@ def dali_score(pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s):
 			score += DALI_dpscorefun(dij1, dij2)
 
 	score += nr_considered*0.2
+	print(len(pos1s), "score", score, nr_considered, "DALI_radius=", DALI_radius)##TODO
 	return score
 
 def lddt_score_t(pos1s, pos2s, D1, D2, t):

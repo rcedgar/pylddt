@@ -8,4 +8,4 @@ fi
 cd ../data
 mkdir -p ../output
 
-../src/lddt_foldmason.py --msa 12.afa --pdbfiles 12.files --cols yes
+../src/pylddt_rce.py --msa BB11001.afa --pdbfiles BB11001.files

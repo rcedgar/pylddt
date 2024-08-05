@@ -3,7 +3,7 @@
 import sys
 import math
 
-class StructureScorer:
+class MSTAScorer:
 	def __init__(self):
 		self.three2one = { 'ALA':'A', 'VAL':'V', 'PHE':'F', 'PRO':'P', 'MET':'M',
 					'ILE':'I', 'LEU':'L', 'ASP':'D', 'GLU':'E', 'LYS':'K',
@@ -44,6 +44,13 @@ class StructureScorer:
 
 		return seq, xs, ys, zs
 
+	def msa_col(self, col_nr):
+		col_str = ""
+		for label in self.labels:
+			row = self.msa[label]
+			col_str += row[col_nr]
+		return col_str
+
 	def read_msa(self, fn):
 		sys.stderr.write("\n");
 		self.msa = {}
@@ -75,7 +82,7 @@ class StructureScorer:
 				sys.stderr.write("\n=== ERROR=== FASTA is not aligned\n\n")
 				sys.exit(1)
 
-	def dali_Z(score, len1, len2):
+	def dali_Z_from_score_and_lengths(self, score, len1, len2):
 		n12 = math.sqrt(len1*len2)
 		x = min(n12, 400)
 		mean = 7.9494 + 0.70852*x + 2.5895e-4*x*x - 1.9156e-6*x*x*x
@@ -90,7 +97,7 @@ class StructureScorer:
 		pos2 = 0
 		pos1s = []
 		pos2s = []
-		for col in range(self, self.nr_cols):
+		for col in range(self.nr_cols):
 			c1 = row1[col]
 			c2 = row2[col]
 			gap1 = (c1 == '-' or c1 == '.')
@@ -140,14 +147,23 @@ class StructureScorer:
 				pos += 1
 		return col2pos
 
-	def read_pdbs(self, paths_fn):
-		self.pdb_fns = []
-		self.fn2data = {}
+	def read_paths(self, paths_fn):
+		paths = []
 		for line in open(paths_fn):
 			fn = line.strip()
+			paths.append(fn)
+		return paths
+
+	def read_pdbs_paths(self, paths):
+		self.pdb_fns = []
+		self.fn2data = {}
+		for fn in paths:
 			self.pdb_fns.append(fn)
 			self.fn2data[fn] = self.read_pdb(fn)
 		self.nr_pdbs = len(self.pdb_fns)
+
+	def read_pdbs(self, paths_fn):
+		self.read_pdbs_paths(self.read_paths(paths_fn))
 	
 	def match_seqs_to_pdbs(self):
 		self.msai_dx2pdb_idx = []
@@ -259,3 +275,191 @@ class StructureScorer:
 			self.total_col_scores += col_score
 		self.mean_col_score = self.total_col_scores/self.nr_cols
 		return self.mean_col_score
+
+	def lddt_score(self, seq1, pos1s, x1s, y1s, z1s, seq2, pos2s, x2s, y2s, z2s):
+		self.nr_cols = len(pos1s)
+		assert len(pos2s) == self.nr_cols
+		L1 = len(x1s)
+		L2 = len(x2s)
+
+		assert len(y1s) == L1
+		assert len(z1s) == L1
+
+		assert len(y2s) == L2
+		assert len(z2s) == L2
+	
+		D1 = []
+		for i in range(L1):
+			D1.append([ None ]*L1)
+
+		D2 = []
+		for i in range(L2):
+			D2.append([ None ]*L2)
+		
+		for i in range(L1):
+			for j in range(i, L1):
+				d = self.get_dist(x1s[i], y1s[i], z1s[i], x1s[j], y1s[j], z1s[j])
+				D1[i][j] = d
+				D1[j][i] = d
+
+		for i in range(L2):
+			for j in range(i, L2):
+				d = self.get_dist(x2s[i], y2s[i], z2s[i], x2s[j], y2s[j], z2s[j])
+				D2[i][j] = d
+				D2[j][i] = d
+
+		total = 0
+		self.col_scores = []
+		self.nr_preserveds = []
+		self.nr_considereds = []
+		for coli in range(self.nr_cols):
+			pos1i = pos1s[coli]
+			pos2i = pos2s[coli]
+			nr_considered = 0
+			nr_preserved = 0
+			for colj in range(self.nr_cols):
+				pos1j = pos1s[colj]
+				pos2j = pos2s[colj]
+				for t in self.thresholds: # [ 0.5, 1, 2, 4 ]:
+					d1 = D1[pos1i][pos1j]
+					d2 = D2[pos2i][pos2j]
+					if d1 > self.R0:
+						continue
+					nr_considered += 1
+					diff = abs(d1 - d2)
+					if diff <= t:
+						nr_preserved += 1
+			score = nr_preserved/nr_considered
+			aa = seq1[pos1i]
+			assert seq2[pos2i] == aa
+			total += score
+			self.col_scores.append(score)
+			self.nr_preserveds.append(nr_preserved)
+			self.nr_considereds.append(nr_considered)
+			
+		avg = total/self.nr_cols
+		return avg
+
+	def DALI_weight(self, y):
+		x = 1.0/(self.D*self.D)
+		w = math.exp(-x*y*y)
+		return w
+
+	def DALI_dpscorefun(self, d1, d2):
+		diff = abs(d1 - d2)
+		mean = (d1 + d2)/2
+		if mean > 100:
+			return 0
+		w = self.DALI_weight(mean)
+		ratio = diff/mean
+		if mean == 0:
+			score = w*self.d0
+		else:
+			score = w*(self.d0 - ratio)
+		# print("diff=", diff, "mean=", mean, "w=", w, "ratio=", ratio, "score=", score)
+		return score
+
+	def dali_score(self, pos1s, x1s, y1s, z1s, pos2s, x2s, y2s, z2s):
+		n = len(pos1s)
+		assert len(pos2s) == n
+		score = 0
+		nr_considered = 0
+		for coli in range(n):
+			pos1i = pos1s[coli]
+			pos2i = pos2s[coli]
+			for colj in range(n):
+				if colj == coli:
+					continue
+				pos1j = pos1s[colj]
+				pos2j = pos2s[colj]
+
+				dij1 = self.get_dist(
+					x1s[pos1i], y1s[pos1i], z1s[pos1i],
+					x1s[pos1j], y1s[pos1j], z1s[pos1j])
+
+				dij2 = self.get_dist(
+					x2s[pos2i], y2s[pos2i], z2s[pos2i],
+					x2s[pos2j], y2s[pos2j], z2s[pos2j])
+
+				if not self.R0 is None:
+					if self.symmetry == "first":
+						if dij1 > self.R0:
+							continue
+					elif self.symmetry == "both":
+						if dij1 > self.R0 and dij2 > self.R0:
+							continue
+					elif self.symmetry == "either":
+						if dij1 > self.R0 or dij2 > self.R0:
+							continue
+
+				nr_considered += 1
+				pos_score = self.DALI_dpscorefun(dij1, dij2)
+				# print("PosQi=%d PosQj=%d PosTi=%d PosTj=%d dij_Q=%.3g dij_T=%.3g score=%.3g" %
+				# 	(pos1i, pos1j, pos2i, pos2j, dij1, dij2, pos_score))
+				score += pos_score
+
+		score += n*self.d0
+		return score
+	
+	def calc_dali_scores(self):
+		total_Z = 0
+		total_score = 0
+		nr_pairs = 0
+		self.DALI_label1s = []
+		self.DALI_label2s = []
+		self.DALI_scores = []
+		self.DALI_Zs = []
+		for i in range(self.nr_matched):
+			msa_idxi = self.msa_idxs[i]
+			pdb_idxi = self.pdb_idxs[i]
+			labeli = self.labels[msa_idxi]
+			rowi = self.msa[labeli]
+			pdb_fni = self.pdb_fns[pdb_idxi]
+			pdb_seqi, xis, yis, zis = self.fn2data[pdb_fni]
+			Li = len(pdb_seqi)
+			for j in range(i+1, self.nr_matched):
+				msa_idxj = self.msa_idxs[j]
+				pdb_idxj = self.pdb_idxs[j]
+				labelj = self.labels[msa_idxj]
+				rowj = self.msa[labelj]
+				pdb_fnj = self.pdb_fns[pdb_idxj]
+				pdb_seqj, xjs, yjs, zjs = self.fn2data[pdb_fnj]
+				Lj = len(pdb_seqj)
+				posis, posjs = self.align_pair(rowi, rowj)
+				score = self.dali_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs)
+				Z = self.dali_Z_from_score_and_lengths(score, Li, Lj)
+				total_score += score
+				total_Z += Z
+				nr_pairs += 1
+				self.DALI_label1s.append(labeli)
+				self.DALI_label2s.append(labelj)
+				self.DALI_scores.append(score)
+				self.DALI_Zs.append(Z)
+
+		self.mean_DALI_score = total_score/nr_pairs
+		self.mean_DALI_Z = total_Z/nr_pairs
+
+def create_scorer(Args):
+	scorer = MSTAScorer()
+
+	scorer.R0 = Args.radius
+	scorer.symmetry = Args.symmetry
+
+	if hasattr(Args, "horizon"):
+		scorer.D = Args.horizon
+	if hasattr(Args, "diagwt"):
+		scorer.d0 = Args.diagwt
+
+	scorer.thresholds = []
+	if hasattr(Args, "dists"):
+		scorer.dists = Args.dists
+		flds = Args.dists.split(',')
+		for fld in flds:
+			try:
+				t = float(fld)
+			except:
+				sys.stderr.write("\n===ERROR=== Invalid distance in --dists argument\n\n")
+				sys.exit(1)
+			scorer.thresholds.append(t)
+
+	return scorer

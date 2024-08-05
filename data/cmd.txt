@@ -1,0 +1,1 @@
+-daliscore_msa ../data/1aab_1j46.afa -input ../data/1aab_1j46.files -output ../output/daliscore.1aab_1j46.tsv -log ../output/daliscore.1aab_1j46.log
