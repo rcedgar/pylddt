@@ -46,4 +46,4 @@ if Args.cols == "yes":
 		c = seqi[i]
 		print("%d\t%c\t%d\t%d\t%.4f" % (i, c, scorer.nr_preserveds[i], scorer.nr_considereds[i], scorer.col_scores[i]))
 
-print("LDDT\t%.4f" % LDDT)
+print("LDDT_model\t%.4f" % LDDT)

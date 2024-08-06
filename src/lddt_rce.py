@@ -8,7 +8,7 @@ from ms import *
 Usage = \
 (
 'Calculate LDDT for a sequence alignment by comparison with '
-'reference structures, using the Foldmason method.'
+'reference structures as average of pair-wise LDDT.'
 )
 
 AP = argparse.ArgumentParser(description = Usage)
@@ -17,7 +17,7 @@ AP.add_argument("--pdbfiles", required=True, help="Text file with one PDB pathna
 AP.add_argument("--radius", required=False, type=float, default=15.0, help="LDDT inclusion radius (default 15)")
 AP.add_argument("--dists", required=False, default="0.5,1,2,4", help="LDDT distance thresholds, comma-separated (default 0.5,1,2,4)")
 AP.add_argument("--symmetry", required=False, choices=[ "first", "both", "either" ], default="first", help="Set R0 according to both / either / first (default first)")
-AP.add_argument("--cols", action="store_true", help="Report column scores")
+AP.add_argument("--pairs", action="store_true", help="Report pair-wise LDDTs (default don't show)")
 Args = AP.parse_args()
 
 msa_fn = Args.msa
@@ -37,12 +37,13 @@ if nr_matched != scorer.nr_seqs:
 
 scorer.set_dist_mxs()
 scorer.set_col2pos_vec()
-LDDT = scorer.calc_mean_col_score()
+scorer.match_seqs_to_pdbs()
+scorer.calc_lddt_scores()
 
-if Args.cols:
-	print("col_nr\tcol_str\tscore")
-	for col_nr in range(scorer.nr_cols):
-		col_str = scorer.msa_col(col_nr)
-		print("%d\t%s\t%.4f" % (col_nr, col_str, scorer.col_scores[col_nr]))
+if Args.pairs:
+	n = len(scorer.LDDT_label1s)
+	for i in range(n):
+		print("%s\t%s\t%.4f" %
+			 (scorer.LDDT_label1s[i], scorer.LDDT_label2s[i], scorer.LDDT_scores[i]))
 
-print("LDDT_foldmason\t%.4f\t%s\n" % (LDDT, msa_fn))
+print("LDDT_rce_mean\t%.4f\t%s\n" % (scorer.mean_LDDT_score, msa_fn))

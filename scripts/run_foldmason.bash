@@ -23,8 +23,8 @@ mkdir -p ../output
 ../scripts/foldmason_msa2lddt.bash 54.afa 54.files \
   > ../output/foldmason_54.txt
 
-## ../scripts/foldmason_msa2lddt.bash BB11001.afa BB11001.files \
-## > ../output/foldmason_BB11001.txt
+../scripts/foldmason_msa2lddt.bash BB11001.afa BB11001.files \
+  > ../output/foldmason_BB11001.txt
 
 cd ../output
 grep "Average MSA LDDT" foldmason_*.txt

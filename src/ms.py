@@ -330,13 +330,13 @@ class MSTAScorer:
 					if diff <= t:
 						nr_preserved += 1
 			score = nr_preserved/nr_considered
-			aa = seq1[pos1i]
-			assert seq2[pos2i] == aa
 			total += score
 			self.col_scores.append(score)
 			self.nr_preserveds.append(nr_preserved)
 			self.nr_considereds.append(nr_considered)
-			
+
+		if self.nr_cols == 0:
+			return 0
 		avg = total/self.nr_cols
 		return avg
 
@@ -439,12 +439,45 @@ class MSTAScorer:
 		self.mean_DALI_score = total_score/nr_pairs
 		self.mean_DALI_Z = total_Z/nr_pairs
 
+	def calc_lddt_scores(self):
+		total_LDDT = 0
+		nr_pairs = 0
+		self.LDDT_label1s = []
+		self.LDDT_label2s = []
+		self.LDDT_scores = []
+		for i in range(self.nr_matched):
+			msa_idxi = self.msa_idxs[i]
+			pdb_idxi = self.pdb_idxs[i]
+			labeli = self.labels[msa_idxi]
+			rowi = self.msa[labeli]
+			pdb_fni = self.pdb_fns[pdb_idxi]
+			pdb_seqi, xis, yis, zis = self.fn2data[pdb_fni]
+			Li = len(pdb_seqi)
+			for j in range(i+1, self.nr_matched):
+				msa_idxj = self.msa_idxs[j]
+				pdb_idxj = self.pdb_idxs[j]
+				labelj = self.labels[msa_idxj]
+				rowj = self.msa[labelj]
+				pdb_fnj = self.pdb_fns[pdb_idxj]
+				pdb_seqj, xjs, yjs, zjs = self.fn2data[pdb_fnj]
+				Lj = len(pdb_seqj)
+				posis, posjs = self.align_pair(rowi, rowj)
+				score = self.lddt_score(pdb_seqi, posis, xis, yis, zis, pdb_seqj, posjs, xjs, yjs, zjs)
+				total_LDDT += score
+				nr_pairs += 1
+				self.LDDT_label1s.append(labeli)
+				self.LDDT_label2s.append(labelj)
+				self.LDDT_scores.append(score)
+
+		self.mean_LDDT_score = total_LDDT/nr_pairs
+
 def create_scorer(Args):
 	scorer = MSTAScorer()
 
-	scorer.R0 = Args.radius
-	scorer.symmetry = Args.symmetry
-
+	if hasattr(Args, "radius"):
+		scorer.R0 = Args.radius
+	if hasattr(Args, "symmetric"):
+		scorer.symmetry = Args.symmetry
 	if hasattr(Args, "horizon"):
 		scorer.D = Args.horizon
 	if hasattr(Args, "diagwt"):
