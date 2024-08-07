@@ -1,4 +1,0 @@
-label=1aab_	pdbfile=1aab_.pdb
-label=1j46_A	pdbfile=1j46_A.pdb
-label1=1aab_	label2=1j46_A	DALI_Z=15.4	LDDT=0.7372
-MSA=1aab_1j46.afa	matched=2/2	pairs=1	mean_Z=15.4	mean_LDDT=0.7372

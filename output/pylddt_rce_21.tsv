@@ -1,4 +1,0 @@
-label=2	pdbfile=2.pdb
-label=1	pdbfile=1.pdb
-label1=2	label2=1	DALI_Z=18.8	LDDT=0.4949
-MSA=21.afa	matched=2/2	pairs=1	mean_Z=18.8	mean_LDDT=0.4949

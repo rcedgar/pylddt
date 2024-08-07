@@ -318,13 +318,16 @@ class MSTAScorer:
 			nr_considered = 0
 			nr_preserved = 0
 			for colj in range(self.nr_cols):
+				if coli == colj:
+					continue
 				pos1j = pos1s[colj]
 				pos2j = pos2s[colj]
+				d1 = D1[pos1i][pos1j]
+				d2 = D2[pos2i][pos2j]
+				if d1 > self.R0:
+					continue
+				## print(f"{pos1i=} {pos1j=} {pos2i=} {pos2j=} {d1=} {d2=}")
 				for t in self.thresholds: # [ 0.5, 1, 2, 4 ]:
-					d1 = D1[pos1i][pos1j]
-					d2 = D2[pos2i][pos2j]
-					if d1 > self.R0:
-						continue
 					nr_considered += 1
 					diff = abs(d1 - d2)
 					if diff <= t:
@@ -335,6 +338,7 @@ class MSTAScorer:
 			self.nr_preserveds.append(nr_preserved)
 			self.nr_considereds.append(nr_considered)
 
+		print(f"{total=} {self.nr_cols=}")
 		if self.nr_cols == 0:
 			return 0
 		avg = total/self.nr_cols

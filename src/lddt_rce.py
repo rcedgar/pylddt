@@ -46,4 +46,4 @@ if Args.pairs:
 		print("%s\t%s\t%.4f" %
 			 (scorer.LDDT_label1s[i], scorer.LDDT_label2s[i], scorer.LDDT_scores[i]))
 
-print("LDDT_rce_mean\t%.4f\t%s\n" % (scorer.mean_LDDT_score, msa_fn))
+print("LDDT_rce_mean\t%.4f\t%s" % (scorer.mean_LDDT_score, msa_fn))

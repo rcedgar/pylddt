@@ -1,1 +1,5 @@
--daliscore_msa ../data/1aab_1j46.afa -input ../data/1aab_1j46.files -output ../output/daliscore.1aab_1j46.tsv -log ../output/daliscore.1aab_1j46.log
+# -daliscore_msa ../data/1aab_1j46.afa -input ../data/1aab_1j46.files -output ../output/daliscore.1aab_1j46.tsv -log ../output/daliscore.1aab_1j46.log
+
+# -lddt_msa ../data/1aab_1j46.afa -input ../data/1aab_1j46.files -output ../output/lddt.1aab_1j46.tsv -log ../output/lddt.1aab_1j46.log
+
+-lddt_msa ../data/BB11001.afa -input ../data/BB11001.files -output ../output/reseek_lddt.BB11001.tsv -log ../output/reseek_lddt.BB11001.log
