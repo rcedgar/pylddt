@@ -1,0 +1,7 @@
+label1=1aab_	label2=2lef_A	score=270	Z=5.880
+label1=1aab_	label2=1j46_A	score=277	Z=6.127
+label1=1aab_	label2=1k99_A	score=214	Z=4.091
+label1=2lef_A	label2=1j46_A	score=338	Z=7.755
+label1=2lef_A	label2=1k99_A	score=217	Z=4.083
+label1=1j46_A	label2=1k99_A	score=263	Z=5.399
+MSA=BB11001.afa	mean_DALI_score=263	mean_DALI_Z=5.556

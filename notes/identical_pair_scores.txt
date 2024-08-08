@@ -1,5 +1,5 @@
                                                | rce    model    myfm
-openstructure_12.txt:Global LDDT score: 0.4949 | 0.4897 0.4897 0.4897
+openstructure_12.txt:Global LDDT score: 0.4949 | 0.4897 0.4897 0.4897  
 openstructure_21.txt:Global LDDT score: 0.4876 | 0.4933 0.4933 0.4933 
 openstructure_45.txt:Global LDDT score: 0.6095 | 0.6206 0.6206 0.6206
 openstructure_54.txt:Global LDDT score: 0.6211 | 0.6070 0.6070 0.6070

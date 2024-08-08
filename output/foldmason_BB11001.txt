@@ -1,0 +1,43 @@
+'1aab_.pdb' -> '../foldmason_pdbdir/1aab_.pdb'
+'1j46_A.pdb' -> '../foldmason_pdbdir/1j46_A.pdb'
+'1k99_A.pdb' -> '../foldmason_pdbdir/1k99_A.pdb'
+'2lef_A.pdb' -> '../foldmason_pdbdir/2lef_A.pdb'
+'BB11001.afa' -> '../foldmason_tmp/msa.fa'
+createdb ../foldmason_pdbdir tmpdb 
+
+MMseqs Version:        	763a428b75f5c0447b8205e1198f35de531ea2bf
+Path to ProstT5        	
+Chain name mode        	0
+Write mapping file     	0
+Mask b-factor threshold	0
+Coord store mode       	2
+Write lookup file      	1
+Input format           	0
+File Inclusion Regex   	.*
+File Exclusion Regex   	^$
+Threads                	32
+Verbosity              	3
+
+Output file: tmpdb
+[========================================================] =4====== 0s 20ms
+==Time for merging to tmpdb_ss: 0h 0m 0s 149ms
+Time for merging to tmpdb_h: 0h 0m 0s 65ms
+Time for merging to tmpdb_ca: 0h 0m 0s 58ms
+Time for merging to tmpdb: 0h 0m 0s 56ms
+Ignore 0 out of 4.
+Too short: 0, incorrect: 0, not proteins: 0.
+Time for processing: 0h 0m 0s 645ms
+msa2lddt tmpdb msa.fa 
+
+MMseqs Version:        	763a428b75f5c0447b8205e1198f35de531ea2bf
+LDDT pair threshold    	0
+Threads                	32
+Input Newick guide tree	
+Verbosity              	3
+                       	
+                       	true
+
+Average MSA LDDT: 0.613031
+Columns considered: 96/96
+Column scores: 0.287981,0.236442,0.327778,0.335746,0.000000,0.000000,0.000000,0.425000,0.532609,0.509259,0.456360,0.532693,0.645117,0.708538,0.764627,0.808426,0.824206,0.791931,0.766941,0.735192,0.751279,0.769142,0.757951,0.700814,0.764233,0.781987,0.775969,0.787175,0.721858,0.701923,0.729197,0.695018,0.660852,0.574346,0.501389,0.000000,0.000000,0.533025,0.609205,0.641452,0.727716,0.743205,0.737152,0.725490,0.792642,0.743070,0.783289,0.806349,0.822980,0.762944,0.816561,0.770216,0.807652,0.833205,0.815179,0.764634,0.824735,0.798019,0.784659,0.865536,0.884237,0.859545,0.846196,0.879708,0.855553,0.829436,0.849118,0.860119,0.788095,0.793561,0.783325,0.763626,0.692807,0.709188,0.787563,0.616105,0.647754,0.561351,0.505488,0.421056,0.507846,0.402778,0.446181,0.343254,0.000000,0.000000,0.000000,0.462454,0.437601,0.601687,0.387121,0.380556,0.491167,0.553571,0.532680,0.499324
+Time for processing: 0h 0m 0s 50ms

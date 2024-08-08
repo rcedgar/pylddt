@@ -31,8 +31,10 @@ scorer.match_seqs_to_pdbs()
 
 nr_matched = len(scorer.msa_idxs)
 if nr_matched != scorer.nr_seqs:
-	sys.stderr.write("\n===ERROR=== %d / %d MSA sequences matched to structures\n" %
+	sys.stderr.write("\n===ERROR===\n%d / %d MSA sequences matched to structures\n" %
 					 (scorer.nr_matched, scorer.nr_seqs))
+	sys.stderr.write("first not matched >%s\n" %
+					 (scorer.not_matched_labels[0]))
 	sys.exit(1)
 
 scorer.set_dist_mxs()

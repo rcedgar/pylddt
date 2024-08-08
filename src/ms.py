@@ -25,6 +25,9 @@ class MSTAScorer:
 			name = line[12:16].strip()
 			if not name == "CA":
 				continue
+			alt_loc = line[16]
+			if alt_loc != ' ' and alt_loc != 'A':
+				continue
 			three = line[17:20]
 			try:
 				one = self.three2one[three]
@@ -92,24 +95,24 @@ class MSTAScorer:
 		Z = (score - mean) / max(1.0, sigma)
 		return Z
 
-	def align_pair(self, row1, row2):
-		pos1 = 0
-		pos2 = 0
-		pos1s = []
-		pos2s = []
-		for col in range(self.nr_cols):
-			c1 = row1[col]
-			c2 = row2[col]
-			gap1 = (c1 == '-' or c1 == '.')
-			gap2 = (c2 == '-' or c2 == '.')
-			if not gap1 and not gap2:
-				pos1s.append(pos1)
-				pos2s.append(pos2)
-			if not gap1:
-				pos1 += 1
-			if not gap2:
-				pos2 += 1
-		return pos1s, pos2s
+	# def align_pair(self, row1, row2):
+	# 	pos1 = 0
+	# 	pos2 = 0
+	# 	pos1s = []
+	# 	pos2s = []
+	# 	for col in range(self.nr_cols):
+	# 		c1 = row1[col]
+	# 		c2 = row2[col]
+	# 		gap1 = (c1 == '-' or c1 == '.')
+	# 		gap2 = (c2 == '-' or c2 == '.')
+	# 		if not gap1 and not gap2:
+	# 			pos1s.append(pos1)
+	# 			pos2s.append(pos2)
+	# 		if not gap1:
+	# 			pos1 += 1
+	# 		if not gap2:
+	# 			pos2 += 1
+	# 	return pos1s, pos2s
 
 	def get_dist(self, x1, y1, z1, x2, y2, z2):
 		dx = x1 - x2
@@ -179,14 +182,18 @@ class MSTAScorer:
 				sys.stderr.write("\n===ERROR=== Test MSA is not aligned\n")
 				sys.exit(1)
 			test_row = self.msa[label]
-			test_seq = test_row.replace("-", "").replace(".", "")
+			test_seq = test_row.replace("-", "").replace(".", "").upper()
 			matched_pdb_idx = None
 			for pdb_idx in range(self.nr_pdbs):
 				pdb_fn = self.pdb_fns[pdb_idx]
 				if pdb_fn in self.matched_pdb_fns:
 					continue
 				pdb_seq, _, _, _s = self.fn2data[pdb_fn]
-				if pdb_seq == test_seq:
+				if label == "1bb9_":
+					print("")
+					print(pdb_seq)
+					print(test_seq)
+				if pdb_seq.upper() == test_seq:
 					matched_pdb_idx = pdb_idx
 					self.matched_pdb_fns.append(pdb_fn)
 					self.nr_matched += 1
@@ -312,9 +319,13 @@ class MSTAScorer:
 		self.col_scores = []
 		self.nr_preserveds = []
 		self.nr_considereds = []
+		nr_cols_considered = 0
 		for coli in range(self.nr_cols):
 			pos1i = pos1s[coli]
 			pos2i = pos2s[coli]
+			if pos1i is None or pos2i is None:
+				continue
+			nr_cols_considered += 1
 			nr_considered = 0
 			nr_preserved = 0
 			for colj in range(self.nr_cols):
@@ -322,10 +333,19 @@ class MSTAScorer:
 					continue
 				pos1j = pos1s[colj]
 				pos2j = pos2s[colj]
+				if pos1j is None or pos2j is None:
+					continue
 				d1 = D1[pos1i][pos1j]
 				d2 = D2[pos2i][pos2j]
-				if d1 > self.R0:
-					continue
+				if self.symmetry == "first":
+					if d1 > self.R0:
+						continue
+				elif self.symmetry == "both":
+					if d1 > self.R0 and d2 > self.R0:
+						continue
+				elif self.symmetry == "either":
+					if d1 > self.R0 or d2 > self.R0:
+						continue
 				## print(f"{pos1i=} {pos1j=} {pos2i=} {pos2j=} {d1=} {d2=}")
 				for t in self.thresholds: # [ 0.5, 1, 2, 4 ]:
 					nr_considered += 1
@@ -338,10 +358,9 @@ class MSTAScorer:
 			self.nr_preserveds.append(nr_preserved)
 			self.nr_considereds.append(nr_considered)
 
-		print(f"{total=} {self.nr_cols=}")
-		if self.nr_cols == 0:
+		if nr_cols_considered == 0:
 			return 0
-		avg = total/self.nr_cols
+		avg = total/nr_cols_considered
 		return avg
 
 	def DALI_weight(self, y):
@@ -429,7 +448,9 @@ class MSTAScorer:
 				pdb_fnj = self.pdb_fns[pdb_idxj]
 				pdb_seqj, xjs, yjs, zjs = self.fn2data[pdb_fnj]
 				Lj = len(pdb_seqj)
-				posis, posjs = self.align_pair(rowi, rowj)
+				# posis, posjs = self.align_pair(rowi, rowj)
+				posis = self.col2pos_vec[msa_idxi]
+				posjs = self.col2pos_vec[msa_idxj]
 				score = self.dali_score(posis, xis, yis, zis, posjs, xjs, yjs, zjs)
 				Z = self.dali_Z_from_score_and_lengths(score, Li, Lj)
 				total_score += score
@@ -465,7 +486,9 @@ class MSTAScorer:
 				pdb_fnj = self.pdb_fns[pdb_idxj]
 				pdb_seqj, xjs, yjs, zjs = self.fn2data[pdb_fnj]
 				Lj = len(pdb_seqj)
-				posis, posjs = self.align_pair(rowi, rowj)
+				# posis, posjs = self.align_pair(rowi, rowj)
+				posis = self.col2pos_vec[msa_idxi]
+				posjs = self.col2pos_vec[msa_idxj]
 				score = self.lddt_score(pdb_seqi, posis, xis, yis, zis, pdb_seqj, posjs, xjs, yjs, zjs)
 				total_LDDT += score
 				nr_pairs += 1
@@ -480,7 +503,7 @@ def create_scorer(Args):
 
 	if hasattr(Args, "radius"):
 		scorer.R0 = Args.radius
-	if hasattr(Args, "symmetric"):
+	if hasattr(Args, "symmetry"):
 		scorer.symmetry = Args.symmetry
 	if hasattr(Args, "horizon"):
 		scorer.D = Args.horizon

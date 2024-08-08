@@ -37,8 +37,8 @@ for i in range(n):
     s = "label1=" + scorer.DALI_label1s[i]
     s += "\tlabel2=" + scorer.DALI_label2s[i]
     s += "\tscore=%.0f" % scorer.DALI_scores[i]
-    s += "\tZ=%.1f" % scorer.DALI_Zs[i]
+    s += "\tZ=%.3f" % scorer.DALI_Zs[i]
     print(s)
 
-print("MSA=%s\tmean_DALI_score=%.0f\tmean_DALI_Z=%.1f" %
+print("MSA=%s\tmean_DALI_score=%.0f\tmean_DALI_Z=%.3f" %
       (Args.msa, scorer.mean_DALI_score, scorer.mean_DALI_Z))

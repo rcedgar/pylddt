@@ -13,6 +13,6 @@ mkdir -p ../output
 ../src/lddt_rce.py --msa 21.afa --pdbfiles 21.files > ../output/lddt_rce_21.tsv
 ../src/lddt_rce.py --msa 45.afa --pdbfiles 45.files > ../output/lddt_rce_45.tsv
 ../src/lddt_rce.py --msa 54.afa --pdbfiles 54.files > ../output/lddt_rce_54.tsv
-../src/lddt_rce.py --msa BB11001.afa --pdbfiles BB11001.files > ../output/lddt_rce_BB11001.tsv
+../src/lddt_rce.py --msa BB11001.afa --pdbfiles BB11001.files --pairs > ../output/lddt_rce_BB11001.tsv
 
 grep LDDT_rce_mean ../output/lddt_rce*.tsv
