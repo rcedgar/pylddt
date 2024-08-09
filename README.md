@@ -6,18 +6,8 @@ string matching, the sequence of a PDB file is taken from CA ATOM records. Struc
 ignored. Sequences in the MSA which do not match a structure are reported, then ignored.
 
 ## Usage 
-<pre>
-pylddt.py [-h] --msa MSA --pdbfiles PDBFILES [--radius RADIUS] [--dists DISTS] [--horizon HORIZON]
-                 [--diagwt DIAGWT] [--output OUTPUT]
 
-  -h, --help           show this help message and exit
-  --msa MSA            Multiple Sequence Alignment (FASTA format)
-  --pdbfiles PDBFILES  Text file with one PDB pathname per line
-  --radius RADIUS      LDDT inclusion radius (default 15)
-  --dists DISTS        LDDT distance thresholds, comma-separated (default 0.5,1,2,4)
-  --horizon HORIZON    DALI horizon (default 20)
-  --diagwt DIAGWT      DALI diagonal weight (default 0.2)
-</pre>
+TODO
 
 ## References
 

@@ -1,5 +1,5 @@
 LDDT_fm=0.6257  LDDT_mu=0.7017  Z=5.550  Z15=3.700    reseek -msta_score
-                LDDT_mu=0.7314                        lddt_rce.py
+                LDDT_mu=0.7017                        lddt_rce.py
                                 Z=5.556               daliz.py
 LDDT_fm=0.6257                                        lddt_foldmason.py
 LDDT_fm=0.6130                                        foldmason msa2lddt
