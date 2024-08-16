@@ -1,0 +1,1 @@
+-msta_score correct.fa -input pdb.files  -log reseek.log

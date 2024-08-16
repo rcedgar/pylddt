@@ -1,0 +1,7 @@
+All-alpha
+Q5SGX2 15-84 UniProt
+2IY5 A:15-84 PDBe
+
+All-beta
+E7FCY1 950-1106 UniProt
+4LD1 A:950-1106

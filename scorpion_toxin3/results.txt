@@ -1,0 +1,5 @@
+correct     msa2lddt=0.0645  
+misaligned  msa2lddt=0.1866
+
+MSA=correct     LDDT_fm=0.0729  avg_LDDT_mu=0.9744      avg_Z=0.324     avg_Z15=0.037
+MSA=misaligned  LDDT_fm=0.2299  avg_LDDT_mu=0.4622      avg_Z=-16.410   avg_Z15=-0.889
