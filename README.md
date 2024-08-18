@@ -6,7 +6,7 @@ Structures which do not match the MSA are ignored. Sequences in the MSA which do
 
 ## Usage 
 
-Scripts arre in `src/*.py`. Type `scriptname.py -h` to get usage information.
+Scripts are in `src/*.py`. Type `scriptname.py -h` to get usage information.
 
 ## To reproduce FoldMason LDDT anomalies
 
