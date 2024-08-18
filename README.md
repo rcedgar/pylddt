@@ -27,3 +27,6 @@ Mariani, Valerio, et al. "LDDT: a local superposition-free score for comparing p
 Holm, Liisa, and Chris Sander. "Protein structure comparison by alignment of distance matrices." <i>Journal of molecular biology</i> 233.1 (1993): 123-138.
 
 Gilchrist CL, Mirdita M, Steinegger M. Multiple Protein Structure Alignment at Scale with FoldMason. bioRxiv. 2024 Aug 1:2024-08.
+
+
+![FoldMason LDDT anomalies](https://github.com/rcedgar/pylddt/raw/main/results/FoldMason_LDDT_anomaly_figure.png)
