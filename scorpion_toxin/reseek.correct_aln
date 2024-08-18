@@ -1,0 +1,9 @@
+
+reseek v1.1.i86linux64 [6dd83f7]
+../bin/reseek -msta_score correct_aln.fa -input pdb.files -log reseek.correct_aln 
+Started Sat Aug 17 17:02:58 2024
+MSA=correct_aln	LDDT_fm=1.0000	avg_LDDT_mu=1.0000	avg_Z=9.802	avg_Z15=8.290
+
+Finished Sat Aug 17 17:02:58 2024
+Elapsed time 00:00
+Max memory 2.2Mb

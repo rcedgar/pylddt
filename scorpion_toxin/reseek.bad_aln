@@ -1,0 +1,9 @@
+
+reseek v1.1.i86linux64 [6dd83f7]
+../bin/reseek -msta_score bad_aln.fa -input pdb.files -log reseek.bad_aln 
+Started Sat Aug 17 17:02:58 2024
+MSA=bad_aln	LDDT_fm=1.0000	avg_LDDT_mu=0.3333	avg_Z=1.934	avg_Z15=1.430
+
+Finished Sat Aug 17 17:02:58 2024
+Elapsed time 00:00
+Max memory 2.2Mb
