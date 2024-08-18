@@ -30,3 +30,27 @@ Gilchrist CL, Mirdita M, Steinegger M. Multiple Protein Structure Alignment at S
 
 
 ![FoldMason LDDT anomalies](https://github.com/rcedgar/pylddt/raw/main/results/FoldMason_LDDT_anomaly_figure.png)
+
+<b>Anomalous accounting for gaps with the FoldMason implemention of LDDT</b>.
+
+
+(a) Three structures used to construct test
+cases: (i) scorpion toxin 1sco chain A, (ii) 2iy5 A/a an all-alpha domain at the start of 2iy5 chain A,
+and (iii) 4dl1 A/b, an all-beta domain at the start of 4ld1 chain A.
+
+
+(b) Incorrect alignment of four copies
+of 1sco A where the first amino acid is changed to ensure that sequences are distinct, e.g. 1sco/D has
+first letter D.
+
+(c) Correct alignment corresponding to (b). 
+
+(d) 1sco A+2iy5 A/a aligned to
+1sco A+4ld1 A/b; these structure pairs were manually concatenated to simulate multi-domain proteins
+with one common domain. Domains 2iy5 A/a and 4ld1 A/b are not homologous and have no sequence
+or structural similarity, therefore (d) is incorrect; these domains should be considered independent
+inserts per alignment (e). 
+
+Note that LDDT-fm (FoldMason) assigns 1.0, the highest possible score, to both (b) and (c);
+also, LDDT-fm assigns a very low score to correct alignment (e) and a higher score to incorrect
+alignment (d). LDDT-mu (Muscle) and Z assign higher scores to the correct alignments.
