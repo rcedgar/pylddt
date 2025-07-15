@@ -11,6 +11,10 @@ Scripts are in `src/*.py`. Type `scriptname.py -h` to get usage information.
 ## To reproduce FoldMason LDDT anomalies
 
 <pre>
+
+cd pylddt/bin
+gunzip *.gz
+
 cd pylddt/scorpion_toxin
 ./run_msa2lddt.bash
 ./run_reseek.bash
